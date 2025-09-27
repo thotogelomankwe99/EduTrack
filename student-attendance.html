@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mark Attendance - EduTrack</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px; }
+.container { background:white; border-radius:16px; box-shadow:0 20px 40px rgba(0,0,0,0.1); padding:2rem; width:100%; max-width:450px; }
+.header { text-align:center; margin-bottom:2rem; padding-bottom:1rem; border-bottom:2px solid #f3f4f6; }
+.school-logo { width:80px; height:80px; background:#2563EB; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; font-size:2rem; }
+h1 { color:#1f2937; margin-bottom:0.5rem; font-size:1.5rem; }
+.class-info { color:#6b7280; font-size:0.9rem; line-height:1.5; }
+.info-card { background:#f8fafc; border-radius:8px; padding:1rem; margin-bottom:1.5rem; }
+.info-item { display:flex; justify-content:space-between; margin-bottom:0.5rem; }
+.info-label { font-weight:600; color:#374151; min-width:100px; }
+.info-value { color:#6b7280; text-align:right; }
+.form-group { margin-bottom:1.5rem; }
+label { display:block; margin-bottom:0.5rem; color:#374151; font-weight:600; }
+input { width:100%; padding:12px; border:2px solid #e5e7eb; border-radius:8px; font-size:16px; transition:border-color 0.3s; }
+input:focus { outline:none; border-color:#2563EB; box-shadow:0 0 0 3px rgba(37,99,235,0.1); }
+.btn { width:100%; padding:14px; background:#059669; color:white; border:none; border-radius:8px; font-size:16px; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px; transition:background-color 0.3s; }
+.btn:hover { background:#047857; }
+.btn:disabled { background:#9ca3af; cursor:not-allowed; }
+.message { padding:12px; border-radius:8px; margin-top:1rem; text-align:center; display:none; }
+.success { background:#dcfce7; color:#166534; border:1px solid #bbf7d0; display:block; }
+.error { background:#fee2e2; color:#dc2626; border:1px solid #fecaca; display:block; }
+.instructions { background:#f0f9ff; border:1px solid #bae6fd; border-radius:8px; padding:1rem; margin-bottom:1.5rem; font-size:0.9rem; color:#0369a1; }
+.loading { display:inline-block; width:20px; height:20px; border:3px solid #ffffff; border-radius:50%; border-top-color:transparent; animation:spin 1s ease-in-out infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <div class="school-logo">📚</div>
+        <h1>EduTrack Attendance</h1>
+        <p class="class-info">Mark your attendance for today's class</p>
+    </div>
+
+    <div class="info-card">
+        <div class="info-item">
+            <span class="info-label">Teacher:</span>
+            <span class="info-value" id="teacherName">Loading...</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">Class:</span>
+            <span class="info-value" id="className">Loading...</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">School:</span>
+            <span class="info-value" id="schoolName">Loading...</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">Date:</span>
+            <span class="info-value" id="attendanceDate">Loading...</span>
+        </div>
+    </div>
+
+    <div class="instructions">
+        💡 <strong>Instructions:</strong> Enter your full name exactly as it appears on the class list
+    </div>
+
+    <form id="attendanceForm">
+        <div class="form-group">
+            <label for="studentName">Your Full Name</label>
+            <input type="text" id="studentName" placeholder="Enter your full name" required>
+        </div>
+        <button type="submit" class="btn" id="submitBtn">
+            <span id="btnText">✅ Mark Me Present</span>
+            <span id="btnLoading" class="loading" style="display:none;"></span>
+        </button>
+    </form>
+
+    <div id="message" class="message"></div>
+</div>
+
+<script>
+const supabaseUrl = 'https://gzfhxldtvlrnhjujkoad.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd6Zmh4bGR0dmxybmhqdWprb2FkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3ODU0ODIsImV4cCI6MjA3NDM2MTQ4Mn0.KgDkP8R4mTneQg3KEyRreaFUFvE3Tr8fhtJ8d4eTXkE';
+const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+
+const urlParams = new URLSearchParams(window.location.search);
+let teacherId = urlParams.get('teacher') || '1045e391-4ca1-4d51-ad9f-6c6df87b17b9'; // default
+const qrCode = urlParams.get('session') || 'default-session';
+
+async function initPage() {
+    const today = new Date();
+    document.getElementById('attendanceDate').textContent = today.toLocaleDateString('en-ZA', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+
+    try {
+        // Fetch teacher info from users
+        const { data: teacher, error: teacherError } = await supabase
+            .from('users')
+            .select('full_name, class_name, school_name')
+            .eq('id', teacherId)
+            .single();
+        if (teacherError) throw teacherError;
+
+        document.getElementById('teacherName').textContent = teacher.full_name;
+        document.getElementById('className').textContent = teacher.class_name;
+        document.getElementById('schoolName').textContent = teacher.school_name;
+
+        // Fetch or create today's session
+        const todayISO = today.toISOString().split('T')[0];
+        let { data: session, error: sessionError } = await supabase
+            .from('attendance_sessions')
+            .select('*')
+            .eq('teacher_id', teacherId)
+            .eq('session_date', todayISO)
+            .eq('qr_code', qrCode)
+            .single();
+
+        if (sessionError || !session) {
+            const { data: newSession, error: createError } = await supabase
+                .from('attendance_sessions')
+                .insert([{
+                    teacher_id: teacherId,
+                    class_name: teacher.class_name,
+                    session_date: todayISO,
+                    qr_code: qrCode,
+                    is_active: true,
+                    expires_at: new Date(new Date().setHours(23,59,59,999)).toISOString()
+                }])
+                .select()
+                .single();
+            if (createError) throw createError;
+            session = newSession;
+        }
+        window.currentSessionId = session.id;
+
+    } catch(err) {
+        console.error(err);
+        document.getElementById('teacherName').textContent = "Failed to load data";
+        document.getElementById('className').textContent = "-";
+        document.getElementById('schoolName').textContent = "-";
+    }
+}
+
+document.getElementById('attendanceForm').addEventListener('submit', async function(e){
+    e.preventDefault();
+    const submitBtn = document.getElementById('submitBtn');
+    const btnText = document.getElementById('btnText');
+    const btnLoading = document.getElementById('btnLoading');
+    const studentName = document.getElementById('studentName').value.trim();
+    if (!studentName || !window.currentSessionId) return;
+
+    submitBtn.disabled = true;
+    btnText.style.display = 'none';
+    btnLoading.style.display = 'inline-block';
+
+    try {
+        const todayISO = new Date().toISOString().split('T')[0];
+        await supabase.from('attendance_records').insert([{
+            teacher_id: teacherId,
+            student_name: studentName,
+            session_id: window.currentSessionId,
+            class_name: document.getElementById('className').textContent,
+            school_name: document.getElementById('schoolName').textContent,
+            session_date: todayISO,
+            status: 'present',
+            marked_at: new Date().toISOString(),
+            method: 'qr_scan'
+        }]);
+
+        const msg = document.getElementById('message');
+        msg.textContent = `✅ Attendance marked successfully! Welcome, ${studentName}`;
+        msg.className = 'message success';
+        msg.style.display = 'block';
+        document.getElementById('studentName').value = '';
+
+    } catch(err) {
+        console.error(err);
+        const msg = document.getElementById('message');
+        msg.textContent = "❌ Error marking attendance. Please try again.";
+        msg.className = 'message error';
+        msg.style.display = 'block';
+    } finally {
+        submitBtn.disabled = false;
+        btnText.style.display = 'inline';
+        btnLoading.style.display = 'none';
+    }
+});
+
+document.addEventListener('DOMContentLoaded', initPage);
+</script>
+</body>
+</html>

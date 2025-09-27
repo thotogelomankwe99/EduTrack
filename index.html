@@ -1,0 +1,2550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduTrack - Teacher Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f8fafc;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        /* Header Styles */
+        header {
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border-bottom: 1px solid rgba(107, 114, 128, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 40;
+        }
+
+        .header-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo {
+            width: 40px;
+            height: 40px;
+            background: #2563EB;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .app-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #111827;
+        }
+
+        .app-subtitle {
+            font-size: 12px;
+            color: #6B7280;
+        }
+
+        .teacher-info {
+            text-align: center;
+        }
+
+        .teacher-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #111827;
+        }
+
+        .class-info {
+            font-size: 14px;
+            color: #6B7280;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .datetime-badge {
+            background: rgba(37, 99, 235, 0.05);
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(37, 99, 235, 0.1);
+            color: #2563EB;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .settings-btn {
+            padding: 8px;
+            background: none;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .settings-btn:hover {
+            background: rgba(107, 114, 128, 0.05);
+        }
+
+        /* Navigation Styles */
+        nav {
+            background: white;
+            border-bottom: 1px solid rgba(107, 114, 128, 0.1);
+            position: sticky;
+            top: 72px;
+            z-index: 30;
+        }
+
+        .nav-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+            display: flex;
+            gap: 1.5rem;
+            overflow-x: auto;
+        }
+
+        .tab-btn {
+            padding: 1rem 0.75rem;
+            font-size: 14px;
+            font-weight: 500;
+            border: none;
+            background: none;
+            border-bottom: 2px solid transparent;
+            color: #6B7280;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+
+        .tab-btn:hover {
+            color: #2563EB;
+        }
+
+        .tab-btn.active {
+            border-bottom-color: #2563EB;
+            color: #2563EB;
+        }
+
+        /* Main Content */
+        main {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 1.5rem 1rem;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Grid Layouts */
+        .grid {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .grid-cols-1 {
+            grid-template-columns: 1fr;
+        }
+
+        .grid-cols-3 {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .grid-cols-2 {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        /* Add to your existing CSS */
+.qr-code canvas {
+    border-radius: 4px;
+    max-width: 100%;
+    height: auto;
+}
+
+.qr-code img {
+    border-radius: 4px;
+    max-width: 100%;
+    height: auto;
+}
+
+/* Loading state for QR */
+.qr-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.qr-loading .spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #f3f4f6;
+    border-left: 4px solid #2563EB;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 10px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+        @media (max-width: 768px) {
+            .grid-cols-3,
+            .grid-cols-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .lg-grid-cols-2 {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .lg-grid-cols-3 {
+                grid-template-columns: 1fr 2fr;
+            }
+        }
+
+        /* Card Styles */
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+        }
+
+        .stat-card {
+            border-left: 4px solid;
+        }
+
+        .stat-card.primary {
+            border-left-color: #2563EB;
+        }
+
+        .stat-card.success {
+            border-left-color: #059669;
+        }
+
+        .stat-card.danger {
+            border-left-color: #DC2626;
+        }
+
+        .stat-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .stat-info p:first-child {
+            color: #6B7280;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .stat-value {
+            font-size: 30px;
+            font-weight: bold;
+            color: #111827;
+        }
+
+        .stat-value.success {
+            color: #047857;
+        }
+
+        .stat-value.danger {
+            color: #DC2626;
+        }
+
+        .stat-icon {
+            background: rgba(37, 99, 235, 0.1);
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 24px;
+        }
+
+        .stat-icon.success {
+            background: rgba(5, 150, 105, 0.1);
+        }
+
+        .stat-icon.danger {
+            background: rgba(220, 38, 38, 0.1);
+        }
+
+        /* Button Styles */
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: #2563EB;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1D4ED8;
+        }
+
+        .btn-success {
+            background: #059669;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #047857;
+        }
+
+        .btn-danger {
+            background: #DC2626;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #B91C1C;
+        }
+
+        .btn-secondary {
+            background: rgba(5, 150, 105, 0.2);
+            color: #047857;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(5, 150, 105, 0.3);
+        }
+
+        .btn-full {
+            width: 100%;
+        }
+
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: #6B7280;
+            margin-bottom: 8px;
+        }
+
+        .form-input,
+        .form-select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid rgba(107, 114, 128, 0.3);
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .form-input:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: #2563EB;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        /* Table Styles */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            padding: 12px 8px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #6B7280;
+            border-bottom: 1px solid rgba(107, 114, 128, 0.2);
+        }
+
+        td {
+            padding: 12px 8px;
+            border-bottom: 1px solid rgba(107, 114, 128, 0.1);
+        }
+
+        tr:hover {
+            background: #f8fafc;
+        }
+
+        /* Status Badges */
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-present {
+            background: rgba(37, 99, 235, 0.2);
+            color: #2563EB;
+        }
+
+        .status-absent {
+            background: rgba(220, 38, 38, 0.2);
+            color: #DC2626;
+        }
+
+        /* QR Code Section */
+        .qr-display {
+            text-align: center;
+        }
+
+        .qr-code {
+            width: 192px;
+            height: 192px;
+            margin: 0 auto 1rem;
+            background: white;
+            border: 2px solid rgba(107, 114, 128, 0.2);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        .qr-code .icon {
+            font-size: 60px;
+            margin-bottom: 8px;
+        }
+
+        /* Student List */
+        .student-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px;
+            background: #f8fafc;
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+
+        .student-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .student-avatar {
+            width: 40px;
+            height: 40px;
+            background: rgba(37, 99, 235, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #2563EB;
+        }
+
+        .student-name {
+            font-weight: 500;
+            color: #111827;
+        }
+
+        .student-details {
+            font-size: 14px;
+            color: #6B7280;
+        }
+
+        /* Empty States */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #6B7280;
+        }
+
+        .empty-state .icon {
+            font-size: 48px;
+            margin-bottom: 1rem;
+        }
+
+        /* Overlay */
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(17, 24, 39, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+        }
+
+        .overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            width: 100%;
+            max-width: 448px;
+            margin: 1rem;
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #6B7280;
+        }
+
+        .modal-close:hover {
+            color: #111827;
+        }
+
+        /* Notifications */
+        .notifications {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 50;
+        }
+
+        .notification {
+            padding: 12px 16px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 8px;
+            transform: translateX(100%);
+            transition: transform 0.3s;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            background: #2563EB;
+            color: white;
+        }
+
+        .notification.warning {
+            background: #059669;
+            color: #111827;
+        }
+
+        .notification.error {
+            background: #DC2626;
+            color: white;
+        }
+
+        .notification.info {
+            background: #111827;
+            color: white;
+        }
+
+        /* Footer */
+        footer {
+            background: white;
+            border-top: 1px solid rgba(107, 114, 128, 0.2);
+            margin-top: 3rem;
+        }
+
+        .footer-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .footer-section h3,
+        .footer-section h4 {
+            margin-bottom: 1rem;
+            color: #111827;
+        }
+
+        .footer-section p,
+        .footer-section li {
+            color: #6B7280;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .footer-section ul {
+            list-style: none;
+        }
+
+        .footer-section a {
+            color: #6B7280;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer-section a:hover {
+            color: #2563EB;
+        }
+
+        /* Chart Placeholder */
+        .chart-placeholder {
+            height: 256px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f8fafc;
+            border-radius: 8px;
+            color: #6B7280;
+            font-size: 14px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-container {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .teacher-info {
+                display: none;
+            }
+
+            .app-subtitle {
+                display: none;
+            }
+
+            .lg-grid-cols-3 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Utility Classes */
+        .hidden {
+            display: none !important;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .mb-4 {
+            margin-bottom: 1rem;
+        }
+
+        .mb-6 {
+            margin-bottom: 1.5rem;
+        }
+
+        .mt-3 {
+            margin-top: 0.75rem;
+        }
+
+        .space-y-4 > * + * {
+            margin-top: 1rem;
+        }
+
+        .space-x-2 > * + * {
+            margin-left: 0.5rem;
+        }
+
+        .flex {
+            display: flex;
+        }
+
+        .items-center {
+            align-items: center;
+        }
+
+        .justify-between {
+            justify-content: space-between;
+        }
+
+        .gap-2 {
+            gap: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="header-container">
+            <!-- Left side: Logo and App Name -->
+            <div class="logo-section">
+                <div class="logo">
+                    <span>📚</span>
+                </div>
+                <div>
+                    <h1 class="app-title">EduTrack</h1>
+                    <p class="app-subtitle">Smart Attendance System</p>
+                </div>
+            </div>
+
+            <!-- Center: Teacher Info -->
+            <div class="teacher-info">
+                <h2 class="teacher-name" id="teacherName">Loading...</h2>
+                <p class="class-info" id="classInfo">Loading...</p>
+            </div>
+
+            <!-- Right side: Date/Time and Settings -->
+            <div class="header-right">
+                <div class="datetime-badge">
+                    <span id="currentDateTime">📅 Loading...</span>
+                </div>
+                <button onclick="showSettings()" class="settings-btn">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Tab Navigation -->
+    <nav>
+        <div class="nav-container">
+            <button onclick="switchTab('overview')" class="tab-btn active">
+                📊 Overview
+            </button>
+            <button onclick="switchTab('attendance')" class="tab-btn">
+                📱 Daily Attendance
+            </button>
+            <button onclick="switchTab('students')" class="tab-btn">
+                👥 Manage Students
+            </button>
+            <button onclick="switchTab('reports')" class="tab-btn">
+                📈 Reports
+            </button>
+            <button onclick="switchTab('settings')" class="tab-btn">
+                ⚙️ Settings
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main>
+        <!-- Overview Tab -->
+        <div id="overview-tab" class="tab-content active">
+            <!-- Quick Stats Cards -->
+            <div class="grid grid-cols-3 mb-6">
+                <div class="card stat-card primary">
+                    <div class="stat-header">
+                        <div>
+                            <p>Total Students</p>
+                            <p class="stat-value" id="totalStudents">0</p>
+                        </div>
+                        <div class="stat-icon">
+                            <span>👥</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card stat-card success">
+                    <div class="stat-header">
+                        <div>
+                            <p>Present Today</p>
+                            <p class="stat-value success" id="presentToday">0</p>
+                        </div>
+                        <div class="stat-icon success">
+                            <span>✅</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card stat-card danger">
+                    <div class="stat-header">
+                        <div>
+                            <p>Absent Today</p>
+                            <p class="stat-value danger" id="absentToday">0</p>
+                        </div>
+                        <div class="stat-icon danger">
+                            <span>❌</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analytics Charts -->
+            <div class="grid lg-grid-cols-2">
+                <div class="card">
+                    <h3 style="font-size: 18px; font-weight: bold; color: #111827; margin-bottom: 1rem;">Class Attendance Overview</h3>
+                    <div class="chart-placeholder">
+                        <div style="text-align: center;">
+                            <div style="font-size: 48px; margin-bottom: 1rem;">📊</div>
+                            <p>Attendance Chart</p>
+                            <p style="font-size: 12px; color: #6B7280;" id="attendanceChartText">Loading data...</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3 style="font-size: 18px; font-weight: bold; color: #111827; margin-bottom: 1rem;">Weekly Trends</h3>
+                    <div class="chart-placeholder">
+                        <div style="text-align: center;">
+                            <div style="font-size: 48px; margin-bottom: 1rem;">📈</div>
+                            <p>Weekly Trends</p>
+                            <p style="font-size: 12px; color: #6B7280;" id="trendsText">Track attendance over time</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Daily Attendance Tab -->
+        <div id="attendance-tab" class="tab-content">
+            <div class="grid lg-grid-cols-3">
+      <!-- QR Code Section -->
+<div class="card">
+    <h2 style="font-size: 20px; font-weight: bold; color: #111827; margin-bottom: 1rem;">
+        <span style="margin-right: 8px;">📱</span> Daily QR Code
+    </h2>
+
+    <div id="qrSection" class="text-center">
+        <button id="generateBtn" onclick="generateQR()" class="btn btn-primary btn-full mb-4">
+    Generate Today's QR Code
+</button>
+
+        <div id="qrDisplay" class="qr-display hidden">
+            <div class="qr-code" style="width: 200px; height: 200px; margin: 0 auto; display: flex; align-items: center; justify-content: center; background: white; border: 2px solid #e5e7eb; border-radius: 8px;"></div>
+            <p id="qrDate" style="font-size: 12px; color: #6B7280; margin-top: 1rem;">Valid: Today</p>
+        </div>
+
+        <div style="margin-top: 1rem; padding: 12px; background: #f0f9ff; border-radius: 8px; border-left: 4px solid #2563EB;">
+            <p style="font-size: 14px; color: #2563EB; margin: 0;">
+                <strong>💡 How to use:</strong> Students scan this code with their phone camera to mark attendance
+            </p>
+        </div>
+    </div>
+</div>
+ <!-- Manual Check-in Section -->
+                    <div class="card">
+                        <h2 style="font-size: 20px; font-weight: bold; color: #111827; margin-bottom: 1rem;">
+                            <span style="margin-right: 8px;">✋</span> Manual Check-in
+                        </h2>
+                        
+                        <div class="space-y-4">
+                            <p style="font-size: 14px; color: #6B7280;">For students without phones or technical issues</p>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Select Student</label>
+                                <select id="manualStudentSelect" class="form-select">
+                                    <option value="">Choose a student...</option>
+                                </select>
+                            </div>
+                            
+                            <div class="flex gap-2">
+                                <button onclick="manualCheckIn('present')" class="btn btn-success" style="flex: 1;">
+                                    ✅ Mark Present
+                                </button>
+                                <button onclick="manualCheckIn('absent')" class="btn btn-danger" style="flex: 1;">
+                                    ❌ Mark Absent
+                                </button>
+                            </div>
+                            
+                            <div style="font-size: 12px; color: #6B7280; background: #f8fafc; padding: 12px; border-radius: 8px;">
+                                💡 <strong>Tip:</strong> Use this for students who forgot their phones, have technical issues, or need special assistance.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Attendance Table -->
+                <div style="grid-column: span 2;">
+                    <div class="card">
+                        <div class="flex items-center justify-between mb-4">
+                            <h2 style="font-size: 20px; font-weight: bold; color: #111827;">
+                                <span style="margin-right: 8px;">📋</span> Today's Attendance
+                            </h2>
+                            <div class="flex gap-2">
+                                <button onclick="filterAttendance('all')" class="btn btn-primary btn-small">All</button>
+                                <button onclick="filterAttendance('present')" class="btn btn-small" style="background: rgba(107, 114, 128, 0.2); color: #6B7280;">Present</button>
+                                <button onclick="filterAttendance('absent')" class="btn btn-small" style="background: rgba(107, 114, 128, 0.2); color: #6B7280;">Absent</button>
+                            </div>
+                        </div>
+                        
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Student</th>
+                                        <th>Status</th>
+                                        <th>Method</th>
+                                        <th>Time</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="attendanceTable">
+                                    <tr>
+                                        <td colspan="5">
+                                            <div class="empty-state">
+                                                <div class="icon">👥</div>
+                                                <p>Loading students...</p>
+                                                <p style="font-size: 14px;">Please wait while we load your class data</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Manage Students Tab -->
+        <div id="students-tab" class="tab-content">
+            <div class="grid lg-grid-cols-2">
+                <!-- Add Student Form -->
+                <div class="card">
+                    <h2 style="font-size: 20px; font-weight: bold; color: #111827; margin-bottom: 1rem;">
+                        <span style="margin-right: 8px;">➕</span> Add New Student
+                    </h2>
+                    
+                    <form onsubmit="addStudent(event)" class="space-y-4">
+                        <div class="form-group">
+                            <label class="form-label">Student Name</label>
+                            <input type="text" id="studentName" required class="form-input" placeholder="e.g., Thabo Mthembu">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Student ID (Optional)</label>
+                            <input type="text" id="studentId" class="form-input" placeholder="e.g., 2024001">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Class</label>
+                            <select id="studentClass_name" class="form-select">
+                                <option value="9A">Grade 9A</option>
+                                <option value="9B">Grade 9B</option>
+                                <option value="10A">Grade 10A</option>
+                                <option value="10B">Grade 10B</option>
+                                <option value="11A">Grade 11A</option>
+                                <option value="11B">Grade 11B</option>
+                                <option value="12A">Grade 12A</option>
+                                <option value="12B">Grade 12B</option>
+                            </select>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary btn-full">
+                            Add Student
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Students List -->
+                <div class="card">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 style="font-size: 20px; font-weight: bold; color: #111827;">
+                            <span style="margin-right: 8px;">👥</span> Class Students
+                        </h2>
+                        <span style="font-size: 14px; color: #6B7280;" id="studentCount">Loading...</span>
+                    </div>
+                    
+                    <div id="studentsList" style="max-height: 384px; overflow-y: auto;">
+                        <div class="empty-state">
+                            <div class="icon">📚</div>
+                            <p>Loading students...</p>
+                            <p style="font-size: 14px;">Please wait while we load your class data</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reports Tab -->
+<div id="reports-tab" class="tab-content">
+
+    <!-- 🔹 Summary Statistics at the Top -->
+    <!--<div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">
+        <div class="card stat-card primary">
+            <div class="stat-header">
+                <div>
+                    <p>Total Records</p>
+                    <p class="stat-value" id="totalRecords">0</p>
+                </div>
+                <div class="stat-icon">
+                    <span>📋</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card stat-card success">
+            <div class="stat-header">
+                <div>
+                    <p>Average Attendance</p>
+                    <p class="stat-value success" id="avgAttendance">0%</p>
+                </div>
+                <div class="stat-icon success">
+                    <span>📊</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card stat-card danger">
+            <div class="stat-header">
+                <div>
+                    <p>Lowest Attendance</p>
+                    <p class="stat-value danger" id="lowestAttendance">0%</p>
+                </div>
+                <div class="stat-icon danger">
+                    <span>📉</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card stat-card primary">
+            <div class="stat-header">
+                <div>
+                    <p>School Days</p>
+                    <p class="stat-value" id="totalDays">0</p>
+                </div>
+                <div class="stat-icon">
+                    <span>📅</span>
+                </div>
+            </div>
+        </div>
+    </div>-->
+
+    <!-- 🔹 Report Filters & Actions -->
+    <div class="card mb-6">
+        <h2 style="font-size: 20px; font-weight: bold; color: #111827; margin-bottom: 1rem;">
+            <span style="margin-right: 8px;">📈</span> Attendance Reports & Analytics
+        </h2>
+        
+        <!-- Report Filters -->
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-6">
+            <div class="form-group">
+                <label class="form-label">Date Range</label>
+                <select id="reportRange" class="form-select" onchange="toggleCustomDates()">
+                    <option value="today">Today</option>
+                    <option value="week">This Week</option>
+                    <option value="month">This Month</option>
+                    <option value="custom">Custom Range</option>
+                </select>
+            </div>
+            
+            <div class="form-group" id="customStartGroup" style="display: none;">
+                <label class="form-label">Start Date</label>
+                <input type="date" id="startDate" class="form-input">
+            </div>
+            
+            <div class="form-group" id="customEndGroup" style="display: none;">
+                <label class="form-label">End Date</label>
+                <input type="date" id="endDate" class="form-input">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Class Filter</label>
+                <select id="classFilter" class="form-select"></select>
+            </div>
+        </div>
+        
+        <!-- Student Filter Section -->
+        <div class="student-filter-section">
+            <h3 style="font-size: 18px; font-weight: bold; color: #111827; margin-bottom: 1rem;">
+                👤 Student-Specific Reports
+            </h3>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                <div class="form-group">
+                    <label class="form-label">Select Student</label>
+                    <select id="studentFilter" class="form-select">
+                        <option value="all">All Students</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Start Date</label>
+                    <input type="date" id="studentStartDate" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">End Date</label>
+                    <input type="date" id="studentEndDate" class="form-input">
+                </div>
+            </div>
+        </div>
+        
+        <!-- Report Actions -->
+        <div class="report-actions">
+            <button onclick="loadReports()" class="btn btn-primary">
+                📊 Generate Report
+            </button>
+            <button onclick="exportReport()" class="btn btn-secondary">
+                📥 Export Report (All)
+            </button>
+            <button id="exportStudentBtn" onclick="exportStudentReport()" class="btn btn-secondary" disabled>
+                📥 Export Student Report
+            </button>
+        </div>
+    </div>
+
+    <!-- 🔹 Loading State -->
+    <div id="reportLoading" class="card mb-6" style="display: none;">
+        <div class="text-center py-8">
+            <div class="spinner" style="margin: 0 auto 1rem;"></div>
+            <p>Loading report data...</p>
+        </div>
+    </div>
+
+    <!-- 🔹 Student Report Card -->
+    <div id="studentReportCard" class="student-report-card" style="display: none;">
+        <div class="flex items-center justify-between mb-4">
+            <h3 style="font-size: 18px; font-weight: bold; color: #111827;" id="studentReportTitle">
+                Student Report
+            </h3>
+            <div class="status-badge status-present" id="studentAttendanceRate">Attendance Rate: 0%</</div>
+        </div>
+        
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+            <div class="text-center">
+                <p style="font-size: 14px; color: #6B7280;">Total Days</p>
+                <p style="font-size: 24px; font-weight: bold; color: #111827;" id="studentTotalDays">0</p>
+            </div>
+            <div class="text-center">
+                <p style="font-size: 14px; color: #6B7280;">Present</p>
+                <p style="font-size: 24px; font-weight: bold; color: #059669;" id="studentPresentDays">0</p>
+            </div>
+            <div class="text-center">
+                <p style="font-size: 14px; color: #6B7280;">Absent</p>
+                <p style="font-size: 24px; font-weight: bold; color: #DC2626;" id="studentAbsentDays">0</p>
+            </div>
+            <div class="text-center">
+                <p style="font-size: 14px; color: #6B7280;">Rate</p>
+                <p style="font-size: 24px; font-weight: bold; color: #2563EB;" id="studentRate">0%</p>
+            </div>
+        </div>
+        
+        <div class="chart-container">
+            <canvas id="studentAttendanceChart"></canvas>
+        </div>
+    </div>
+    
+    <!-- 🔹 Charts -->
+    <div class="grid lg:grid-cols-2 gap-6 mb-6">
+        <div class="card">
+            <h3 style="font-size: 18px; font-weight: bold; color: #111827; margin-bottom: 1rem;">
+                📈 Attendance Trend
+            </h3>
+            <div class="chart-container">
+                <canvas id="attendanceTrendChart"></canvas>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h3 style="font-size: 18px; font-weight: bold; color: #111827; margin-bottom: 1rem;">
+                👥 Class Performance
+            </h3>
+            <div class="chart-container">
+                <canvas id="classPerformanceChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🔹 Detailed Report Table -->
+    <div class="card">
+        <h3 style="font-size: 18px; font-weight: bold; color: #111827; margin-bottom: 1rem;">
+            📋 Detailed Attendance Report
+        </h3>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Class</th>
+                        <th>Total Students</th>
+                        <th>Present</th>
+                        <th>Absent</th>
+                        <th>Attendance Rate</th>
+                    </tr>
+                </thead>
+                <tbody id="reportTable">
+                    <tr>
+                        <td colspan="6">
+                            <div class="empty-state">
+                                <div class="icon">📊</div>
+                                <p>No report data available</p>
+                                <p style="font-size: 14px;">Generate a report to see data</p>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 🔹 Student-wise Breakdown -->
+    <div class="card mt-6">
+        <h3 style="font-size: 18px; font-weight: bold; color: #111827; margin-bottom: 1rem;">
+            👤 Individual Student Reports
+        </h3>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Student Name</th>
+                        <th>Class</th>
+                        <th>Total Days</th>
+                        <th>Days Present</th>
+                        <th>Days Absent</th>
+                        <th>Attendance %</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="studentReportTable">
+                    <tr>
+                        <td colspan="7">
+                            <div class="empty-state">
+                                <div class="icon">👥</div>
+                                <p>No student data available</p>
+                                <p style="font-size: 14px;">Generate a report to see student data</p>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+        <!-- Settings Tab -->
+        <div id="settings-tab" class="tab-content">
+            <div class="grid lg-grid-cols-2">
+                <div class="card">
+                    <h2 style="font-size: 20px; font-weight: bold; color: #111827; margin-bottom: 1rem;">
+                        <span style="margin-right: 8px;">👤</span> Profile Settings
+                    </h2>
+                    <div class="space-y-4">
+                        <div class="form-group">
+                            <label class="form-label">Teacher Name</label>
+                            <input type="text" id="profileName" class="form-input" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Role</label>
+                            <input type="text" id="profileRole" class="form-input" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">School</label>
+                            <input type="text" id="profileSchool" class="form-input" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Class Name</label>
+                            <input type="text" id="profileClass" class="form-input">
+                        </div>
+                        <button onclick="updateProfile()" class="btn btn-primary btn-full">
+                            Update Profile
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2 style="font-size: 20px; font-weight: bold; color: #111827; margin-bottom: 1rem;">
+                        <span style="margin-right: 8px;">🏫</span> Class Settings
+                    </h2>
+                    <div class="space-y-4">
+                        <div class="form-group">
+                            <label class="form-label">Academic Year</label>
+                            <select id="academicYear" class="form-select">
+                                <option>2025</option>
+        
+                            </select>
+                        </div>
+                        <button onclick="startWalkthrough()" class="btn btn-secondary btn-full mb-4">
+                            🎯 Start Tutorial
+                        </button>
+                        <button onclick="logout()" class="btn btn-danger btn-full">
+                            Logout
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Walkthrough Overlay -->
+    <div id="walkthroughOverlay" class="overlay">
+        <div class="modal">
+            <div class="text-center">
+                <div style="font-size: 48px; margin-bottom: 1rem;" id="walkthroughIcon">🎉</div>
+                <h3 style="font-size: 20px; font-weight: bold; color: #111827; margin-bottom: 8px;" id="walkthroughTitle">Welcome to EduTrack!</h3>
+                <p style="color: #6B7280; margin-bottom: 1.5rem;" id="walkthroughText">Let's get you started with a quick tour of your dashboard.</p>
+                
+                <div class="flex items-center justify-between">
+                    <button onclick="skipWalkthrough()" style="color: #6B7280; background: none; border: none; cursor: pointer;">Skip Tour</button>
+                    <div class="flex gap-2">
+                        <button onclick="prevStep()" id="prevBtn" class="btn" style="background: rgba(107, 114, 128, 0.2); color: #6B7280;" disabled>Previous</button>
+                        <button onclick="nextStep()" id="nextBtn" class="btn btn-primary">Next</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-container">
+            <!-- Company Info -->
+            <div class="footer-section">
+                <div class="flex items-center gap-2 mb-4">
+                    <div class="logo" style="width: 32px; height: 32px;">
+                        <span style="font-size: 16px;">📚</span>
+                    </div>
+                    <h3 style="font-size: 18px; font-weight: bold;">EduTrack</h3>
+                </div>
+                <p style="margin-bottom: 1rem;">Smart attendance management system designed for South African schools. Making education administration easier, one class at a time.</p>
+                <p style="font-size: 12px;">© 2024 EduTrack. All rights reserved.</p>
+            </div>
+
+            <!-- Quick Links -->
+            <div class="footer-section">
+                <h4 style="font-weight: 600;">Quick Links</h4>
+                <ul>
+                    <li><a href="#">Help & Support</a></li>
+                    <li><a href="#">User Guide</a></li>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Terms of Service</a></li>
+                </ul>
+            </div>
+
+            <!-- Contact Info -->
+            <div class="footer-section">
+                <h4 style="font-weight: 600;">Support</h4>
+                <div>
+                    <p>📧 support@edutrack.co.za</p>
+                    <p>📞 +27 11 123 4567</p>
+                    <p>🕒 Mon-Fri: 8:00 AM - 5:00 PM</p>
+                    <p style="font-size: 12px; margin-top: 1rem;">Need help? Contact our support team for assistance with your attendance management.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Notifications -->
+    <div id="notifications" class="notifications"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+    function toggleCustomDates() {
+  const range = document.getElementById('reportRange').value;
+  document.getElementById('customStartGroup').style.display = range === 'custom' ? 'block' : 'none';
+  document.getElementById('customEndGroup').style.display = range === 'custom' ? 'block' : 'none';
+}
+
+    // Supabase configuration
+    let supabase;
+    let currentUser = {};
+    let students = [];
+    let currentTab = 'overview';
+    let walkthroughStep = 0;
+    let isFirstTime = localStorage.getItem('edutrack_first_time') !== 'false';
+    let realtimeSubscription = null;
+
+    // Initialize Supabase
+    function initializeSupabase() {
+        try {
+            const supabaseUrl = 'https://gzfhxldtvlrnhjujkoad.supabase.co';
+            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd6Zmh4bGR0dmxybmhqdWprb2FkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3ODU0ODIsImV4cCI6MjA3NDM2MTQ4Mn0.KgDkP8R4mTneQg3KEyRreaFUFvE3Tr8fhtJ8d4eTXkE';
+            supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+            return true;
+        } catch (error) {
+            showNotification('Failed to initialize application', 'error');
+            return false;
+        }
+    }
+
+    // Setup real-time subscription for attendance updates
+    function setupRealtimeSubscription() {
+        if (!supabase || !currentUser.id) return;
+
+        // Clean up existing subscription
+        if (realtimeSubscription) {
+            supabase.removeChannel(realtimeSubscription);
+        }
+
+        // Subscribe to new attendance records for this teacher
+        realtimeSubscription = supabase
+            .channel('attendance_updates')
+            .on(
+                'postgres_changes',
+                {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'attendance_records',
+                    filter: `teacher_id=eq.${currentUser.id}`
+                },
+                (payload) => {
+                    console.log('Real-time update received:', payload);
+                    handleNewAttendance(payload.new);
+                }
+            )
+            .on(
+                'postgres_changes',
+                {
+                    event: 'UPDATE',
+                    schema: 'public',
+                    table: 'attendance_records',
+                    filter: `teacher_id=eq.${currentUser.id}`
+                },
+                (payload) => {
+                    console.log('Real-time update received:', payload);
+                    handleUpdatedAttendance(payload.new);
+                }
+            )
+            .subscribe((status) => {
+                if (status === 'SUBSCRIBED') {
+                    console.log('Real-time subscription active');
+                }
+            });
+    }
+
+    // Handle new attendance records from real-time updates
+    function handleNewAttendance(attendanceRecord) {
+        // Update the student's status in our local array
+        const studentIndex = students.findIndex(student => 
+            student.name.toLowerCase() === attendanceRecord.student_name.toLowerCase()
+        );
+        
+        if (studentIndex !== -1) {
+            students[studentIndex].status = 'present';
+            students[studentIndex].marked_at = attendanceRecord.marked_at;
+            students[studentIndex].method = 'QR Code';
+            
+            // Update UI if we're on the attendance tab
+            if (currentTab === 'attendance' || currentTab === 'overview') {
+                updateAttendanceTable();
+                updateStats();
+                showNotification(`${attendanceRecord.student_name} marked present via QR code!`, 'success');
+            }
+        } else {
+            // Student not in our local list - might be a new student added via QR
+            // We'll refresh the students list to be safe
+            loadStudents();
+        }
+    }
+
+    // Handle updated attendance records
+    function handleUpdatedAttendance(attendanceRecord) {
+        // Similar logic for updates if needed
+        console.log('Attendance updated:', attendanceRecord);
+        loadStudents(); // Refresh to get latest data
+    }
+
+    // Check authentication and load user data
+    async function checkAuthentication() {
+        if (!supabase) initializeSupabase();
+        
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+            showNotification('Please log in to access the dashboard', 'error');
+            setTimeout(() => {
+                window.location.href = 'registration.html';
+            }, 2000);
+            return false;
+        }
+
+        // Verify user role and get user data
+        const { data: user, error } = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
+
+        if (error || !user) {
+            showNotification('User not found in database', 'error');
+            await logout();
+            return false;
+        }
+
+        if (user.role !== 'teacher') {
+            showNotification('Access denied. Teacher role required.', 'error');
+            setTimeout(() => {
+                window.location.href = 'registration.html';
+            }, 2000);
+            return false;
+        }
+
+        currentUser = user;
+        updateUserInterface();
+        await loadStudents();
+        
+        // Setup real-time subscription after authentication
+        setupRealtimeSubscription();
+        
+        return true;
+    }
+
+    // Update UI with user data
+    function updateUserInterface() {
+        document.getElementById('teacherName').textContent = currentUser.full_name;
+        document.getElementById('classInfo').textContent = `${currentUser.class_name || 'Class Teacher'} • ${currentUser.school_name}`;
+        
+        // Update profile settings
+        document.getElementById('profileName').value = currentUser.full_name;
+        document.getElementById('profileRole').value = currentUser.role;
+        document.getElementById('profileSchool').value = currentUser.school_name;
+        document.getElementById('profileClass').value = currentUser.class_name || '';
+        
+        // Update chart texts
+        document.getElementById('attendanceChartText').textContent = `Data for ${currentUser.school_name}`;
+        document.getElementById('trendsText').textContent = `Trends for ${currentUser.class_name || 'your class'}`;
+    }
+
+    // Load students from Supabase with their attendance status for today
+    async function loadStudents() {
+        try {
+            const today = new Date().toISOString().split('T')[0];
+            
+            // First, get all students for this teacher
+            const { data: studentsData, error: studentsError } = await supabase
+                .from('students')
+                .select('*')
+                .eq('teacher_id', currentUser.id)
+                .order('name');
+
+            if (studentsError) throw studentsError;
+
+            // Then, get today's attendance records
+            const { data: attendanceData, error: attendanceError } = await supabase
+                .from('attendance_records')
+                .select('*')
+                .eq('teacher_id', currentUser.id)
+                .eq('session_date', today);
+
+            if (attendanceError) throw attendanceError;
+
+            // Merge student data with today's attendance
+            students = (studentsData || []).map(student => {
+                const todayAttendance = (attendanceData || []).find(att => 
+                    att.student_name.toLowerCase() === student.name.toLowerCase()
+                );
+                
+                return {
+                    ...student,
+                    status: todayAttendance ? 'present' : 'absent',
+                    marked_at: todayAttendance ? todayAttendance.marked_at : null,
+                    method: todayAttendance ? todayAttendance.method : 'Not marked'
+                };
+            });
+
+            updateStudentsList();
+            updateAttendanceTable();
+           /* updateStats();*/
+            
+        } catch (error) {
+            console.error('Error loading students:', error);
+            showNotification('Error loading students', 'error');
+        }
+    }
+
+    // Add student to Supabase
+    async function addStudent(event) {
+        event.preventDefault();
+        
+        const name = document.getElementById('studentName').value;
+        const id = document.getElementById('studentId').value || `STU${Date.now()}`;
+        const class_name = document.getElementById('studentClass_name').value;
+        
+        try {
+            const { data, error } = await supabase
+                .from('students')
+                .insert([
+                    {
+                        id: id,
+                        name: name,
+                        teacher_id: currentUser.id,
+                        school_name: currentUser.school_name,
+                        class_name: currentUser.class_name,
+                        created_at: new Date().toISOString()
+                    }
+                ])
+                .select();
+
+            if (error) throw error;
+
+            // Add to local array with default absent status
+            students.push({
+                ...data[0],
+                status: 'absent',
+                marked_at: null,
+                method: 'Not marked'
+            });
+            
+            updateStudentsList();
+            updateAttendanceTable();
+            updateStats();
+            
+            // Reset form
+            document.getElementById('studentName').value = '';
+            document.getElementById('studentId').value = '';
+            
+            showNotification(`${name} added successfully!`, 'success');
+            
+        } catch (error) {
+            console.error('Error adding student:', error);
+            showNotification('Error adding student', 'error');
+        }
+    }
+
+    // Update profile in Supabase
+    async function updateProfile() {
+        const className = document.getElementById('profileClass').value;
+        
+        try {
+            const { error } = await supabase
+                .from('users')
+                .update({ class_name: className })
+                .eq('id', currentUser.id);
+
+            if (error) throw error;
+
+            currentUser.class_name = className;
+            updateUserInterface();
+            showNotification('Profile updated successfully!', 'success');
+            
+        } catch (error) {
+            console.error('Error updating profile:', error);
+            showNotification('Error updating profile', 'error');
+        }
+    }
+
+    // Logout function
+    async function logout() {
+        // Clean up real-time subscription
+        if (realtimeSubscription) {
+            supabase.removeChannel(realtimeSubscription);
+            realtimeSubscription = null;
+        }
+        
+        if (supabase) {
+            await supabase.auth.signOut();
+        }
+        window.location.href = 'registration.html';
+    }
+
+    // Real-time auth state listener
+    function setupAuthListener() {
+        if (supabase) {
+            supabase.auth.onAuthStateChange((event, session) => {
+                if (event === 'SIGNED_OUT') {
+                    // Clean up real-time subscription
+                    if (realtimeSubscription) {
+                        supabase.removeChannel(realtimeSubscription);
+                        realtimeSubscription = null;
+                    }
+                    window.location.href = 'registration.html';
+                } else if (event === 'SIGNED_IN' && session) {
+                    // Re-initialize real-time subscription
+                    setTimeout(() => {
+                        if (currentUser.id) {
+                            setupRealtimeSubscription();
+                        }
+                    }, 1000);
+                }
+            });
+        }
+    }
+
+    // Update statistics on the overview tab
+    /*function updateStats() {
+        const totalStudents = students.length;
+        const presentCount = students.filter(student => student.status === 'present').length;
+        const absentCount = totalStudents - presentCount;
+
+        document.getElementById('totalStudents').textContent = totalStudents;
+        document.getElementById('presentCount').textContent = presentCount;
+        document.getElementById('absentCount').textContent = absentCount;
+    }*/
+
+    // Update manual check-in dropdown
+    function updateManualCheckInDropdown() {
+        const select = document.getElementById('manualStudentSelect');
+        select.innerHTML = '<option value="">Choose a student...</option>';
+        
+        students.forEach(student => {
+            const option = document.createElement('option');
+            option.value = student.id;
+            option.textContent = `${student.name} (${student.class_name})`;
+            select.appendChild(option);
+        });
+    }
+
+    // Filter attendance table
+    function filterAttendance(status) {
+        const rows = document.querySelectorAll('#attendanceTable tr');
+        const buttons = document.querySelectorAll('#attendance-tab .btn-small');
+        
+        // Update button styles
+        buttons.forEach(btn => {
+            if (btn.textContent.toLowerCase().includes(status) || (status === 'all' && btn.textContent === 'All')) {
+                btn.style.background = '#2563EB';
+                btn.style.color = 'white';
+            } else {
+                btn.style.background = 'rgba(107, 114, 128, 0.2)';
+                btn.style.color = '#6B7280';
+            }
+        });
+        
+        // Show/hide rows based on filter
+        rows.forEach(row => {
+            if (status === 'all') {
+                row.style.display = '';
+            } else {
+                const statusCell = row.querySelector('.status-badge');
+                if (statusCell) {
+                    const rowStatus = statusCell.textContent.trim().toLowerCase();
+                    row.style.display = rowStatus === status ? '' : 'none';
+                }
+            }
+        });
+    }
+
+    // Generate QR Code with Public URL
+    async function generateQR() {
+        const qrDisplay = document.getElementById('qrDisplay');
+        const qrContainer = qrDisplay.querySelector('.qr-code');
+        
+        try {
+            if (!supabase) initializeSupabase();
+
+            // Get current session
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) {
+                alert('You must log in first to generate QR codes!');
+                return;
+            }
+
+            // Use currentUser or populate if empty
+            if (!currentUser.id) {
+                const { data: user, error } = await supabase
+                    .from('users')
+                    .select('*')
+                    .eq('id', session.user.id)
+                    .single();
+
+                if (error || !user) throw new Error('User not found in database');
+                currentUser = user;
+            }
+
+            // Create a unique session ID for today
+            const sessionId = `SESSION_${currentUser.id}_${new Date().toISOString().split('T')[0]}`;
+            
+            // Create a PUBLIC URL that works on any device
+            const baseUrl = window.location.origin;
+            const studentAttendanceUrl = `${baseUrl}/student-attendance.html?session=${sessionId}&teacher=${currentUser.id}&class=${encodeURIComponent(currentUser.class_name || 'Grade 12A')}&teacherName=${encodeURIComponent(currentUser.full_name)}&school=${encodeURIComponent(currentUser.school_name)}`;
+
+            // Clear previous QR
+            qrContainer.innerHTML = '';
+
+            // Generate QR code with the URL
+            if (typeof QRCode === 'undefined') {
+                throw new Error('QRCode library not loaded');
+            }
+
+            new QRCode(qrContainer, {
+                text: studentAttendanceUrl,
+                width: 180,
+                height: 180,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+
+            // Show QR container
+            qrDisplay.classList.remove('hidden');
+            
+            // Update date display
+            const qrDateEl = document.getElementById('qrDate');
+            if (qrDateEl) {
+                qrDateEl.textContent = `Valid: ${new Date().toLocaleDateString()}`;
+            }
+
+            // Store session data for validation
+            const sessionData = {
+                sessionId: sessionId,
+                teacherId: currentUser.id,
+                teacherName: currentUser.full_name,
+                className: currentUser.class_name,
+                schoolName: currentUser.school_name,
+                date: new Date().toISOString().split('T')[0],
+                qrUrl: studentAttendanceUrl
+            };
+            
+            localStorage.setItem('currentQRSession', JSON.stringify(sessionData));
+            
+            showNotification('QR code generated! Students can scan to mark attendance.', 'success');
+
+        } catch (err) {
+            console.error('Error generating QR:', err);
+            showNotification('Error generating QR: ' + err.message, 'error');
+        }
+    }
+
+   // Manual Check-in function - FIXED VERSION
+async function manualCheckIn(status) {
+    try {
+        const studentSelect = document.getElementById('manualStudentSelect');
+        const studentId = studentSelect.value;
+        
+        if (!studentId) {
+            showNotification('Please select a student', 'error');
+            return;
+        }
+        
+        // Find the student
+        const student = students.find(s => s.id === studentId);
+        if (!student) {
+            showNotification('Student not found', 'error');
+            return;
+        }
+        
+        // Update in database
+        const today = new Date().toISOString().split('T')[0];
+        
+        // First, check if attendance record already exists for today
+        const { data: existingRecord, error: checkError } = await supabase
+            .from('attendance_records')
+            .select('*')
+            .eq('teacher_id', currentUser.id)
+            .eq('student_name', student.name)
+            .eq('session_date', today)
+            .single();
+
+        if (checkError && checkError.code !== 'PGRST116') { // PGRST116 = no rows returned
+            throw checkError;
+        }
+
+        if (existingRecord) {
+            // Update existing record
+            const { error } = await supabase
+                .from('attendance_records')
+                .update({
+                    status: status,
+                    marked_at: new Date().toISOString(),
+                    method: 'manual'
+                })
+                .eq('id', existingRecord.id);
+
+            if (error) throw error;
+        } else {
+            // Insert new record
+            const { error } = await supabase
+                .from('attendance_records')
+                .insert([{
+                    teacher_id: currentUser.id,
+                    student_name: student.name,
+                    class_name: student.class_name,
+                    school_name: student.school_name,
+                    session_date: today,
+                    status: status,
+                    marked_at: new Date().toISOString(),
+                    method: 'manual'
+                }]);
+
+            if (error) throw error;
+        }
+        
+        // Update local data
+        student.status = status;
+        student.marked_at = new Date().toISOString();
+        student.method = 'Manual';
+        
+        // Update the UI
+        updateAttendanceTable();
+        updateStats();
+        
+        showNotification(`${student.name} marked as ${status} successfully!`, 'success');
+        
+        // Reset selection
+        studentSelect.value = '';
+        
+    } catch (error) {
+        console.error('Error in manual check-in:', error);
+        showNotification('Failed to mark attendance: ' + error.message, 'error');
+    }
+}
+
+    // Update attendance table with real-time data
+    function updateAttendanceTable() {
+        const tbody = document.getElementById('attendanceTable');
+        
+        if (students.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="5">
+                        <div class="empty-state">
+                            <div class="icon">📋</div>
+                            <p>No students added yet</p>
+                            <p style="font-size: 14px;">Add students to see attendance records</p>
+                        </div>
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+        
+        tbody.innerHTML = students.map(student => {
+            const markedTime = student.marked_at ? 
+                new Date(student.marked_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '-';
+            const initials = student.name.split(' ').map(n => n[0]).join('').toUpperCase();
+            
+            return `
+                <tr>
+                    <td>
+                        <div class="student-info">
+                            <div class="student-avatar">
+                                <span>${initials}</span>
+                            </div>
+                            <div>
+                                <p class="student-name">${student.name}</p>
+                                <p class="student-details">${student.class_name} • ID: ${student.id}</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="status-badge ${student.status === 'present' ? 'status-present' : 'status-absent'}">
+                            ${student.status}
+                        </span>
+                    </td>
+                    <td>${student.method || 'Not marked'}</td>
+                    <td>${markedTime}</td>
+                    <td>
+                        <button onclick="editStudentAttendance('${student.id}')" class="btn btn-small" style="background: rgba(107, 114, 128, 0.2); color: #6B7280;">
+                            Edit
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+  // Edit student attendance - FIXED VERSION
+async function editStudentAttendance(studentId) {
+    const student = students.find(s => s.id === studentId);
+    if (student) {
+        const newStatus = student.status === 'present' ? 'absent' : 'present';
+        
+        try {
+            const today = new Date().toISOString().split('T')[0];
+            
+            // First, check if attendance record already exists for today
+            const { data: existingRecord, error: checkError } = await supabase
+                .from('attendance_records')
+                .select('*')
+                .eq('teacher_id', currentUser.id)
+                .eq('student_name', student.name)
+                .eq('session_date', today)
+                .single();
+
+            if (checkError && checkError.code !== 'PGRST116') {
+                throw checkError;
+            }
+
+            if (newStatus === 'absent') {
+                // Remove attendance record if it exists
+                if (existingRecord) {
+                    const { error } = await supabase
+                        .from('attendance_records')
+                        .delete()
+                        .eq('id', existingRecord.id);
+                    
+                    if (error) throw error;
+                }
+            } else {
+                if (existingRecord) {
+                    // Update existing record
+                    const { error } = await supabase
+                        .from('attendance_records')
+                        .update({
+                            status: newStatus,
+                            marked_at: new Date().toISOString(),
+                            method: 'manual_edit'
+                        })
+                        .eq('id', existingRecord.id);
+                    
+                    if (error) throw error;
+                } else {
+                    // Insert new record
+                    const { error } = await supabase
+                        .from('attendance_records')
+                        .insert([{
+                            teacher_id: currentUser.id,
+                            student_name: student.name,
+                            class_name: student.class_name,
+                            school_name: student.school_name,
+                            session_date: today,
+                            status: newStatus,
+                            marked_at: new Date().toISOString(),
+                            method: 'manual_edit'
+                        }]);
+                    
+                    if (error) throw error;
+                }
+            }
+            
+            // Update local data
+            student.status = newStatus;
+            student.marked_at = newStatus === 'present' ? new Date().toISOString() : null;
+            student.method = newStatus === 'present' ? 'Manual Edit' : 'Not marked';
+            
+            updateAttendanceTable();
+            updateStats();
+            showNotification(`${student.name} marked as ${newStatus}`, 'success');
+            
+        } catch (error) {
+            console.error('Error editing attendance:', error);
+            showNotification('Error updating attendance: ' + error.message, 'error');
+        }
+    }
+}
+
+    // Remove student from Supabase
+    async function removeStudent(studentId) {
+        if (!confirm('Are you sure you want to remove this student?')) {
+            return;
+        }
+        
+        try {
+            const { error } = await supabase
+                .from('students')
+                .delete()
+                .eq('id', studentId);
+
+            if (error) throw error;
+
+            students = students.filter(s => s.id !== studentId);
+            updateStudentsList();
+            updateAttendanceTable();
+            updateStats();
+            showNotification('Student removed successfully', 'warning');
+            
+        } catch (error) {
+            console.error('Error removing student:', error);
+            showNotification('Error removing student', 'error');
+        }
+    }
+
+    // Update students list
+    function updateStudentsList() {
+        const container = document.getElementById('studentsList');
+        const countElement = document.getElementById('studentCount');
+        
+        countElement.textContent = `${students.length} student${students.length !== 1 ? 's' : ''}`;
+        
+        if (students.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <div class="icon">📚</div>
+                    <p>No students added yet</p>
+                    <p style="font-size: 14px;">Add your first student using the form</p>
+                </div>
+            `;
+            return;
+        }
+        
+        container.innerHTML = students.map(student => `
+            <div class="student-item">
+                <div class="student-info">
+                    <div class="student-avatar">
+                        <span>${student.name.split(' ').map(n => n[0]).join('')}</span>
+                    </div>
+                    <div>
+                        <p class="student-name">${student.name}</p>
+                        <p class="student-details">${student.class_name} • ID: ${student.id}</p>
+                    </div>
+                </div>
+                <button onclick="removeStudent('${student.id}')" style="color: #DC2626; background: none; border: none; cursor: pointer;">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                    </svg>
+                </button>
+            </div>
+        `).join('');
+        
+        // Update manual check-in dropdown
+        updateManualCheckInDropdown();
+    }
+
+    // Update date and time
+    function updateDateTime() {
+        const now = new Date();
+        const options = { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        };
+        document.getElementById('currentDateTime').textContent = `📅 ${now.toLocaleDateString('en-ZA', options)}`;
+    }
+
+    // Tab switching
+function switchTab(tabName, event) {
+    // Hide all tabs
+    document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.remove('active');
+    });
+
+    // Remove active class from all buttons
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+
+    // Show selected tab
+    const tab = document.getElementById(tabName + '-tab');
+    if (tab) tab.classList.add('active');
+
+    // Add active class to clicked button
+    if (event?.currentTarget) {
+        event.currentTarget.classList.add('active');
+    }
+
+    currentTab = tabName;
+}
+
+    // Walkthrough functions
+    function startWalkthrough() {
+        walkthroughStep = 0;
+        // Update first step with user's name
+        walkthroughSteps[0].text = `Welcome, ${currentUser.full_name}! Let's get you started with your dashboard.`;
+        document.getElementById('walkthroughOverlay').classList.add('active');
+        updateWalkthroughStep();
+    }
+
+    function nextStep() {
+        if (walkthroughStep < walkthroughSteps.length - 1) {
+            walkthroughStep++;
+            updateWalkthroughStep();
+        } else {
+            finishWalkthrough();
+        }
+    }
+
+    function prevStep() {
+        if (walkthroughStep > 0) {
+            walkthroughStep--;
+            updateWalkthroughStep();
+        }
+    }
+
+    function updateWalkthroughStep() {
+        const step = walkthroughSteps[walkthroughStep];
+        document.getElementById('walkthroughIcon').textContent = step.icon;
+        document.getElementById('walkthroughTitle').textContent = step.title;
+        document.getElementById('walkthroughText').textContent = step.text;
+        
+        document.getElementById('prevBtn').disabled = walkthroughStep === 0;
+        document.getElementById('nextBtn').textContent = walkthroughStep === walkthroughSteps.length - 1 ? 'Finish' : 'Next';
+    }
+
+    function skipWalkthrough() {
+        finishWalkthrough();
+    }
+
+    function finishWalkthrough() {
+        document.getElementById('walkthroughOverlay').classList.remove('active');
+        localStorage.setItem('edutrack_first_time', 'false');
+        showNotification(`Welcome to EduTrack, ${currentUser.full_name}! Start by adding your students.`, 'success');
+    }
+
+    // Show notification
+    function showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.textContent = message;
+        
+        document.getElementById('notifications').appendChild(notification);
+        
+        setTimeout(() => {
+            notification.classList.add('show');
+        }, 100);
+        
+        setTimeout(() => {
+            notification.classList.remove('show');
+            setTimeout(() => notification.remove(), 300);
+        }, 3000);
+    }
+
+    // Settings functions
+    function showSettings() {
+        switchTab('settings');
+        // Find and click the settings tab button
+        const settingsBtn = Array.from(document.querySelectorAll('.tab-btn')).find(btn => btn.textContent.includes('Settings'));
+        if (settingsBtn) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            settingsBtn.classList.add('active');
+        }
+    }
+
+    // Prevent access via back button after logout
+    window.addEventListener('pageshow', function(event) {
+        if (event.persisted) {
+            checkAuthentication();
+        }
+    });
+
+    // Initialize dashboard
+    document.addEventListener('DOMContentLoaded', async function() {
+        initializeSupabase();
+        setupAuthListener();
+        
+        const isAuthenticated = await checkAuthentication();
+        
+        if (isAuthenticated) {
+            updateDateTime();
+            setInterval(updateDateTime, 1000);
+            
+            if (isFirstTime) {
+                setTimeout(() => startWalkthrough(), 1000);
+            }
+        } else {
+            // Hide content if not authenticated
+            document.querySelector('main').style.display = 'none';
+            document.querySelector('nav').style.display = 'none';
+        }
+    });
+
+
+
+    /* -------------------------
+   REPORTS + OVERVIEW SCRIPT
+-------------------------- */
+
+// ✅ Populate class filter with only teacher's class
+function updateClassFilterDropdown() {
+    const select = document.getElementById('classFilter');
+    if (!select) return;
+
+    select.innerHTML = '';
+
+    const allOption = document.createElement('option');
+    allOption.value = 'all';
+    allOption.textContent = 'All Classes';
+    select.appendChild(allOption);
+
+    if (currentUser.class_name) {
+        const classOption = document.createElement('option');
+        classOption.value = currentUser.class_name;
+        classOption.textContent = currentUser.class_name;
+        select.appendChild(classOption);
+    }
+}
+
+// ✅ Load all students in teacher's class into dropdown
+async function loadStudentDropdown() {
+    const select = document.getElementById('studentFilter');
+    if (!select || !currentUser.class_name) return;
+
+    select.innerHTML = '';
+    const allOption = document.createElement('option');
+    allOption.value = 'all';
+    allOption.textContent = 'All Students';
+    select.appendChild(allOption);
+
+    const { data: students, error } = await supabase
+        .from('students')
+        .select('id,name')
+        .eq('class_name', currentUser.class_name);
+
+    if (error) {
+        console.error('Error loading students:', error);
+        return;
+    }
+
+    students.forEach(student => {
+        const opt = document.createElement('option');
+        opt.value = student.id;
+        opt.textContent = student.name;
+        select.appendChild(opt);
+    });
+}
+
+// ✅ Load Overview Tab statistics
+async function loadOverviewStats() {
+    if (!currentUser.class_name) return;
+    const today = new Date().toISOString().split('T')[0];
+
+    try {
+        // Count total students
+        const { data: allStudents, error: studentError } = await supabase
+            .from('students')
+            .select('id', { count: 'exact' })
+            .eq('class_name', currentUser.class_name);
+
+        if (studentError) throw studentError;
+
+        const totalStudents = allStudents?.length || 0;
+        document.getElementById('totalStudents').textContent = totalStudents;
+
+        // Count present today
+        const { data: presentRecords, error: presentError } = await supabase
+            .from('attendance_records')
+            .select('id', { count: 'exact' })
+            .eq('class_name', currentUser.class_name)
+            .eq('session_date', today)
+            .eq('status', 'present');
+
+        if (presentError) throw presentError;
+
+        const presentCount = presentRecords?.length || 0;
+        document.getElementById('presentToday').textContent = presentCount;
+
+        // Count absent today
+        const { data: absentRecords, error: absentError } = await supabase
+            .from('attendance_records')
+            .select('id', { count: 'exact' })
+            .eq('class_name', currentUser.class_name)
+            .eq('session_date', today)
+            .eq('status', 'absent');
+
+        if (absentError) throw absentError;
+
+        const absentCount = absentRecords?.length || 0;
+        document.getElementById('absentToday').textContent = absentCount;
+
+    } catch (err) {
+        console.error('Error loading overview stats:', err);
+        showNotification('Error loading overview stats: ' + err.message, 'error');
+    }
+}
+
+// ✅ Main report generator
+async function loadReports() {
+    try {
+        document.getElementById('reportLoading').style.display = 'block';
+
+        const range = document.getElementById('reportRange').value;
+        const classFilter = document.getElementById('classFilter').value;
+        const studentFilter = document.getElementById('studentFilter').value;
+
+        const today = new Date().toISOString().split('T')[0];
+        let startDate, endDate;
+
+        if (range === 'today') {
+            startDate = today; endDate = today;
+        } else if (range === 'week') {
+            const now = new Date();
+            const first = now.getDate() - now.getDay();
+            startDate = new Date(now.setDate(first)).toISOString().split('T')[0];
+            endDate = today;
+        } else if (range === 'month') {
+            const now = new Date();
+            startDate = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+            endDate = today;
+        } else if (range === 'custom') {
+            startDate = document.getElementById('startDate').value;
+            endDate = document.getElementById('endDate').value;
+        }
+
+        let query = supabase
+            .from('attendance_records')
+            .select('*')
+            .gte('session_date', startDate)
+            .lte('session_date', endDate)
+            .eq('teacher_id', currentUser.id);
+
+        if (classFilter !== 'all') query = query.eq('class_name', classFilter);
+        if (studentFilter !== 'all') query = query.eq('id', studentFilter);
+
+        const { data, error } = await query;
+        if (error) throw error;
+
+        renderReport(data);
+
+    } catch (err) {
+        console.error(err);
+        showNotification('Error loading report: ' + err.message, 'error');
+    } finally {
+        document.getElementById('reportLoading').style.display = 'none';
+    }
+}
+
+// ✅ Render report data into UI
+function renderReport(records) {
+    // --- SUMMARY ---
+    /*document.getElementById('totalRecords').textContent = records.length;*/
+
+    /*const totalDays = [...new Set(records.map(r => r.session_date))].length;
+    document.getElementById('totalDays').textContent = totalDays;
+
+    const presentCount = records.filter(r => r.status === 'present').length;
+    const absentCount = records.filter(r => r.status === 'absent').length;
+    const avgAttendance = (presentCount + absentCount) > 0
+        ? ((presentCount / (presentCount + absentCount)) * 100).toFixed(1)
+        : 0;
+
+    document.getElementById('avgAttendance').textContent = avgAttendance + '%';
+
+    // Lowest attendance class
+    const classGroups = {};
+    records.forEach(r => {
+        if (!classGroups[r.class_name]) classGroups[r.class_name] = { present: 0, total: 0 };
+        classGroups[r.class_name].total++;
+        if (r.status === 'present') classGroups[r.class_name].present++;
+    });
+    let lowestClass = null, lowestRate = 101;
+    for (const [cls, vals] of Object.entries(classGroups)) {
+        const rate = (vals.present / vals.total) * 100;
+        if (rate < lowestRate) {
+            lowestRate = rate;
+            lowestClass = cls;
+        }
+    }
+    /*document.getElementById('lowestAttendance').textContent = lowestClass
+        ? `${lowestRate.toFixed(1)}% (${lowestClass})`
+        : "N/A";*/
+
+    // --- REPORT TABLE ---
+    const reportTable = document.getElementById('reportTable');
+    if (records.length === 0) {
+        reportTable.innerHTML = `<tr><td colspan="6" class="text-center">No records found</td></tr>`;
+    } else {
+        const grouped = {};
+        records.forEach(r => {
+            if (!grouped[r.session_date]) grouped[r.session_date] = { present: 0, absent: 0, classes: new Set() };
+            if (r.status === 'present') grouped[r.session_date].present++;
+            else grouped[r.status === 'absent']++;
+            grouped[r.session_date].classes.add(r.class_name);
+        });
+
+        reportTable.innerHTML = Object.entries(grouped).map(([date, info]) => {
+            const total = info.present + info.absent;
+            const rate = ((info.present / total) * 100).toFixed(1);
+            return `
+                <tr>
+                    <td>${date}</td>
+                    <td>${Array.from(info.classes).join(", ")}</td>
+                    <td>${total}</td>
+                    <td>${info.present}</td>
+                    <td>${info.absent}</td>
+                    <td>${rate}%</td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    // --- STUDENT REPORT TABLE ---
+    const studentReportTable = document.getElementById('studentReportTable');
+    if (records.length === 0) {
+        studentReportTable.innerHTML = `<tr><td colspan="7" class="text-center">No student data available</td></tr>`;
+    } else {
+        const studentGroups = {};
+        records.forEach(r => {
+            if (!studentGroups[r.student_name]) {
+                studentGroups[r.student_name] = { class: r.class_name, present: 0, absent: 0 };
+            }
+            if (r.status === 'present') studentGroups[r.student_name].present++;
+            else studentGroups[r.student_name].absent++;
+        });
+
+        studentReportTable.innerHTML = Object.entries(studentGroups).map(([name, vals]) => {
+            const total = vals.present + vals.absent;
+            const rate = ((vals.present / total) * 100).toFixed(1);
+            const statusBadge = rate >= 75
+                ? `<span class="status-badge status-present">Good</span>`
+                : `<span class="status-badge status-absent">Low</span>`;
+            return `
+                <tr>
+                    <td>${name}</td>
+                    <td>${vals.class}</td>
+                    <td>${total}</td>
+                    <td>${vals.present}</td>
+                    <td>${vals.absent}</td>
+                    <td>${rate}%</td>
+                    <td>${statusBadge}</td>
+                </tr>
+            `;
+        }).join('');
+    }
+}
+
+// ✅ Export functions
+function exportReport() {
+    const table = document.getElementById('reportTable').outerHTML;
+    const blob = new Blob([table], { type: 'application/vnd.ms-excel' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'attendance_report.xls';
+    a.click();
+}
+
+function exportStudentReport() {
+    const table = document.getElementById('studentReportTable').outerHTML;
+    const blob = new Blob([table], { type: 'application/vnd.ms-excel' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'student_report.xls';
+    a.click();
+}
+
+// ✅ Update UI after login
+function updateUserInterface() {
+    document.getElementById('teacherName').textContent = currentUser.full_name;
+    document.getElementById('classInfo').textContent = `${currentUser.class_name || 'Class Teacher'} • ${currentUser.school_name}`;
+
+    document.getElementById('profileName').value = currentUser.full_name;
+    document.getElementById('profileRole').value = currentUser.role;
+    document.getElementById('profileSchool').value = currentUser.school_name;
+    document.getElementById('profileClass').value = currentUser.class_name || '';
+
+    document.getElementById('attendanceChartText').textContent = `Data for ${currentUser.school_name}`;
+    document.getElementById('trendsText').textContent = `Trends for ${currentUser.class_name || 'your class'}`;
+
+    // ✅ Update dropdowns
+    updateClassFilterDropdown();
+    loadStudentDropdown();
+
+    // ✅ Load overview stats
+    loadOverviewStats();
+}
+</script>
+</body>
+</html>

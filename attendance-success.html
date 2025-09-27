@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Recorded - EduTrack</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            text-align: center;
+            color: white;
+        }
+
+        .success-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            padding: 3rem 2rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            max-width: 400px;
+            width: 100%;
+        }
+
+        .success-icon {
+            font-size: 80px;
+            margin-bottom: 1rem;
+        }
+
+        h1 {
+            color: #059669;
+            margin-bottom: 1rem;
+            font-size: 28px;
+        }
+
+        p {
+            color: #6B7280;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .btn {
+            background: #059669;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: background-color 0.2s;
+        }
+
+        .btn:hover {
+            background: #047857;
+        }
+    </style>
+</head>
+<body>
+    <div class="success-container">
+        <div class="success-icon">✅</div>
+        <h1>Attendance Recorded!</h1>
+        <p>Your attendance has been successfully recorded. Thank you for marking your presence.</p>
+        <a href="#" onclick="window.close()" class="btn">Close</a>
+    </div>
+
+    <script>
+        // Auto-close after 5 seconds
+        setTimeout(() => {
+            window.close();
+        }, 5000);
+    </script>
+</body>
+</html>

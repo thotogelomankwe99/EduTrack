@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduTrack Gauteng - Digital Attendance for Gauteng Schools</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #007749; /* Gauteng green */
+            --primary-dark: #005a38;
+            --secondary: #FFB81C; /* Gauteng gold */
+            --accent: #003DA5; /* Gauteng blue */
+            --accent-light: #4d7fdb;
+            --dark: #000;
+            --gray: #212121;
+            --light: #F1F5F9;
+            --white: #FFFFFF;
+            --success: #10B981;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            line-height: 1.6;
+            color: var(--dark);
+            background-color: var(--white);
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23F1F5F9"/><path d="M20,20 L80,20 L80,80 L20,80 Z" fill="none" stroke="%23007749" stroke-width="2" stroke-dasharray="5,5"/><circle cx="50" cy="50" r="30" fill="%23FFB81C" opacity="0.1"/></svg>');
+            background-size: 300px;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: Montserrat;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--dark);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+        }
+
+        h2 {
+            font-size: 2rem;
+            position: relative;
+            padding-bottom: 0.5rem;
+        }
+
+        h2:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 60px;
+            height: 4px;
+            background: var(--secondary);
+            border-radius: 2px;
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .section-title h2:after { 
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        p {
+            margin-bottom: 1rem;
+            color: var(--gray);
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        /* Header & Navigation */
+        header {
+            background-color: var(--white);
+            box-shadow: var(--shadow);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 0;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--primary);
+        }
+
+        .logo img {
+            width: 50px;
+            height: 50px;
+            margin-right: 10px;
+        }
+
+        .logo i {
+            margin-right: 0.5rem;
+            font-size: 1.8rem;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+        }
+
+        .nav-links li {
+            margin-left: 2rem;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--dark);
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--dark);
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            background-color: var(--primary);
+            color: var(--white);
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            transition: var(--transition);
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-accent {
+            background-color: var(--secondary);
+            color: var(--dark);
+        }
+
+        .btn-accent:hover {
+            background-color: #e6a500;
+        }
+
+        /* Hero Section */
+        .hero {
+            position: relative;
+            padding: 8rem 0 5rem;
+            margin-top: 80px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            color: var(--white);
+            overflow: hidden;
+        }
+
+        .hero-img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.1;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23F1F5F9"/><path d="M20,20 L80,20 L80,80 L20,80 Z" fill="none" stroke="%23FFFFFF" stroke-width="2" stroke-dasharray="5,5"/><circle cx="50" cy="50" r="30" fill="%23FFFFFF" opacity="0.1"/></svg>');
+            background-size: 300px;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            max-width: 600px;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+            color: var(--white);
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            color: var(--light);
+        }
+
+        /* About Section */
+        .about {
+            padding: 5rem 0;
+            background-color: var(--white);
+        }
+
+        .ps-box {
+            background-color: var(--light);
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            border-left: 5px solid var(--primary);
+        }
+
+        .ps-box p {
+            font-size: 1.1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Problem & Solution Sections */
+        .section {
+            padding: 5rem 0;
+        }
+
+        .problem {
+            background-color: var(--light);
+        }
+
+        .solution {
+            background-color: var(--white);
+        }
+
+        .section-header { 
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        h2.section-title::after {
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .section-subtitle {
+            font-size: 1.2rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .problem-cards, .solution-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .problem-card, .solution-card {
+            background-color: var(--white);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            border-top: 5px solid var(--primary);
+        }
+
+        .problem-card:hover, .solution-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .problem-icon, .solution-icon {
+            width: 40px;
+            height:40px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .problem-icon svg, .solution-icon svg {
+            width: 28px;
+            height: 28px;
+        }
+
+        /* Why Choose Us Section */
+        .why-choose-us {
+            padding: 5rem 0;
+            background: linear-gradient(to bottom, var(--light) 0%, var(--white) 100%);
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-box {
+            background-color: var(--white);
+            padding: 2rem;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            border-bottom: 4px solid var(--primary);
+        }
+
+        .feature-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .feature-box i {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .feature-box h3 {
+            color: var(--primary);
+        }
+
+        /* How It Works Section */
+        .how-it-works {
+            padding: 5rem 0;
+            background-color: var(--white);
+        }
+
+        .steps { 
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 5rem;
+            counter-reset: step-counter;
+        }
+
+        .step { 
+            position: relative;
+            padding: 2rem 1.5rem 1.5rem;
+            background-color: var(--light);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            border-left: 4px solid var(--primary);
+        }
+
+        .step-number {
+            position: absolute;
+            top: -20px;
+            left: -22px;
+            width: 55px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            color: var(--white);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            box-shadow: var(--shadow);
+        }
+
+        /* Key Features Section */
+        .key-features {
+            padding: 5rem 0;
+            background-color: var(--light);
+        }
+
+        .features-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: flex-start;
+            background-color: var(--white);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+
+        .feature-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .feature-icon {
+            margin-right: 1rem;
+            color: var(--primary);
+            font-size: 1.5rem;
+        }
+
+        /* FAQ Section */
+        .faq {
+            padding: 5rem 0;
+            background-color: var(--white);
+        }
+
+        .faq-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .faq-item {
+            margin-bottom: 1rem;
+            border: 1px solid var(--light);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: var(--transition);
+        }
+
+        .faq-item:hover {
+            border-color: var(--primary);
+        }
+
+        .faq-question {
+            padding: 1.5rem;
+            background-color: var(--light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .faq-answer {
+            padding: 0 1.5rem;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .faq-answer.open {
+            padding: 1.5rem;
+            max-height: 300px;
+        }
+
+        /* CTA Section */
+        .cta {
+            position: relative;
+            padding: 4rem 0;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            color: var(--white);
+            text-align: center;
+            overflow: hidden;
+        }
+
+        .cta-pattern {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.1;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23F1F5F9"/><path d="M20,20 L80,20 L80,80 L20,80 Z" fill="none" stroke="%23FFFFFF" stroke-width="2" stroke-dasharray="5,5"/><circle cx="50" cy="50" r="30" fill="%23FFFFFF" opacity="0.1"/></svg>');
+            background-size: 300px;
+        }
+
+        .cta h2 {
+            color: var(--white);
+            margin-bottom: 1.5rem;
+        }
+
+        .cta h2:after {
+            display: none;
+        }
+
+        .cta p {
+            color: var(--light);
+            max-width: 600px;
+            margin: 0 auto 2rem;
+            font-size: 1.2rem;
+        }
+
+        /* Footer */
+        footer {
+            background-color: var(--light);
+            color: var(--dark);
+            padding: 2rem 0 1rem;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-column h3 {
+            color: var(--accent);
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+        }
+
+        .footer-column span h3 {
+            color: var(--primary);
+        }
+
+        .footer-column span p {
+            color:var(--dark);
+        }
+
+        .footer-column ul {
+            list-style: none;
+        }
+
+        .footer-column ul li {
+            margin-bottom: 0.25rem;
+        }
+
+        .footer-column a {
+            color: var(--dark);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .footer-column a:hover {
+            color: var(--accent-light);
+        }
+
+        .copyright {
+            text-align: center;
+            padding-top: 0.5rem;
+            border-top: 1px solid rgba(0,0,0,0.1);
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in {
+            animation: fadeIn 1s ease forwards;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            h2 {
+                font-size: 1.75rem;
+            }
+            
+            .nav-links {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                width: 100%;
+                background-color: var(--white);
+                flex-direction: column;
+                box-shadow: var(--shadow);
+                padding: 1rem 0;
+            }
+            
+            .nav-links.active {
+                display: flex;
+            }
+            
+            .nav-links li {
+                margin: 0;
+                text-align: center;
+                padding: 0.75rem 0;
+            }
+            
+            .mobile-menu-btn {
+                display: block;
+            }
+            
+            .hero {
+                padding: 6rem 0 4rem;
+            }
+            
+            .hero h1 {
+                font-size: 2.25rem;
+            }
+            
+            .problem-cards, .solution-grid, .features, .steps, .features-list, .footer-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .step-number {
+                left: 50%;
+                transform: translateX(-50%);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header & Navigation -->
+    <header>
+        <div class="container">
+            <nav>
+                <div class="logo">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                    <span>EduTrack</span>
+                </div>
+                <button class="mobile-menu-btn">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <ul class="nav-links">
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="#about">About</a></li>
+                    <li><a href="#how-it-works">How It Works</a></li>
+                    <li><a href="#faq">FAQ</a></li>
+                    <li><a href="registration.html" class="btn btn-accent">Get Started</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="hero-img"> </div>
+        <div class="container">
+            <div class="hero-content">
+                <h1>Digital Attendance for Gauteng Schools</h1>
+                <p>Transform manual attendance tracking with our QR code system designed for Gauteng secondary schools. Save time, reduce errors, and improve accountability.</p>
+                <a href="registration.html" class="btn btn-accent">Get Started</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="about" id="about">
+        <div class="container">
+            <div class="section-title">
+                <h2>About EduTrack Gauteng</h2>
+            </div>
+            <div class="ps-box">
+               <p>EduTrack Gauteng is a digital attendance management system designed for secondary schools. We address the common challenges faced by educational institutions in tracking attendance efficiently.</p>
+               <p>Our platform replaces outdated paper-based systems with an efficient QR code solution that simplifies attendance tracking for both teachers and administrators.</p>
+               <p>With EduTrack Gauteng, schools can focus more on education and less on administrative tasks, ensuring accurate records and streamlined processes.</p>
+            </div>
+        </div>
+    </section>
+
+    <!--Problem Section-->
+    <section class="section problem">
+        <div class="container">
+            <div class="section-header fade-in">
+                <h2 class="section-title">Challenges in School Attendance Tracking</h2>
+                <p class="section-subtitle">Traditional attendance methods create significant administrative burdens and inaccuracies in secondary education systems.</p>
+            </div>
+            <div class="problem-cards fade-in">
+                <div class="problem-card">
+                    <div class="problem-icon">
+                       <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+                           <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                        </svg>
+                    </div>
+                    <h3>Time-Consuming Manual Processes</h3>
+                    <p>Teachers spend valuable instructional time manually recording attendance in registers, taking away from teaching activities.</p>
+                </div>
+                <div class="problem-card">
+                    <div class="problem-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+                            <path d="M16 4c0-1.11.89-2 2-2s2 .89 2 2-.89 2-2 2-2-.89-2-2zM4 18v-4h3v4h2v-7.5c0-.83.67-1.5 1.5-1.5S12 9.67 12 10.5V18h2v-4h3v4h2V8.5c0-1.93-1.57-3.5-3.5-3.5S12 6.57 12 8.5V18H4z"/>
+                        </svg>
+                    </div>
+                    <h3>Inaccurate Records</h3>
+                    <p>Paper-based systems are prone to errors, lost records, and difficulties in tracking patterns of absenteeism.</p>
+                </div>
+                <div class="problem-card">
+                    <div class="problem-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+                            <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+                        </svg>
+                    </div>
+                    <h3>Compliance Challenges</h3> 
+                    <p>Meeting reporting requirements is cumbersome with manual systems, risking compliance issues.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+     <!-- Solution Section -->
+    <section class="section solution">
+        <div class="container">
+            <div class="section-header fade-in">
+                <h2 class="section-title">Our Solution: QR-Based Attendance Tracking</h2>
+                <p class="section-subtitle">EduTrack Gauteng provides a simple yet effective digital solution tailored for secondary schools.</p>
+            </div>
+            <div class="solution-grid fade-in">
+                <div class="solution-card">
+                    <div class="solution-icon">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="white">
+                            <path d="M9 11H7v6h2v-6zm4 0h-2v6h2v-6zm4 0h-2v6h2v-6zm2.5-9H19V1h-2v1H7V1H5v1H4.5C3.67 2 3 2.67 3 3.5v15C3 19.33 3.67 20 4.5 20h15c.83 0 1.5-.67 1.5-1.5v-15C21 2.67 20.33 2 19.5 2z"/>
+                        </svg>
+                    </div>
+                    <h3>QR Code Scanning</h3>
+                    <p>Students scan personalized QR codes using school tablets or teacher devices for quick and accurate attendance marking.</p>
+                </div>
+                <div class="solution-card">
+                    <div class="solution-icon">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="white">
+                            <path d="M16 4c0-1.11.89-2 2-2s2 .89 2 2-.89 2-2 2-2-.89-2-2zM4 18v-4h3v4h2v-7.5c0-.83.67-1.5 1.5-1.5S12 9.67 12 10.5V18h2v-4h3v4h2V8.5c0-1.93-1.57-3.5-3.5-3.5S12 6.57 12 8.5V18H4z"/>
+                        </svg>
+                    </div>
+                    <h3>Manual Backup Option</h3>
+                    <p>For students without device access or technical issues, teachers can manually mark attendance through our intuitive interface.</p>
+                </div>
+                <div class="solution-card">
+                    <div class="solution-icon">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="white">
+                            <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 2 2h8c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
+                        </svg>
+                    </div>
+                    <h3>Compliant Reporting</h3>
+                    <p>Automatically generate reports in required formats for education departments.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Why Choose Us Section -->
+    <section class="why-choose-us">
+        <div class="container">
+            <div class="section-title">
+                <h2>Why Choose EduTrack?</h2>
+                <p>Our solution is specifically designed to address the unique needs of secondary education.</p>
+            </div>
+            
+            <div class="features">
+                <div class="feature-box">
+                    <i class="fas fa-qrcode"></i>
+                    <h3>QR Code Efficiency</h3>
+                    <p>Quick scanning reduces classroom disruption while ensuring accurate attendance records.</p>
+                </div>
+                
+                <div class="feature-box">
+                    <i class="fas fa-chart-line"></i>
+                    <h3>Data-Driven Insights</h3>
+                    <p>Identify attendance patterns and trends to support student success initiatives.</p>
+                </div>
+                
+                <div class="feature-box">
+                    <i class="fas fa-shield-alt"></i>
+                    <h3>Secure & Reliable</h3>
+                    <p>Your data is protected with enterprise-grade security measures and regular backups.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section class="how-it-works" id="how-it-works">
+        <div class="container">
+            <div class="section-title">
+                <h2>How It Works</h2>
+                <p>Simple, efficient process designed specifically for secondary schools</p>
+            </div>
+            
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <h3>QR Code Distribution</h3>
+                    <p>Each student receives a personalized QR code at the beginning of the school year or term.</p>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <h3>Daily Scanning</h3>
+                    <p>Students scan their codes at the classroom entrance using school tablets or teacher devices.</p>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <h3>Manual Backup</h3>
+                    <p>For students without codes or technical issues, teachers can manually mark attendance.</p>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <h3>Real-Time Tracking</h3>
+                    <p>Attendance data is instantly recorded and available to authorized staff.</p>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">5</div>
+                    <h3>Reporting</h3>
+                    <p>Generate compliant reports for education departments with one click.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Key Features Section -->
+    <section class="key-features">
+        <div class="container">
+            <div class="section-title">
+                <h2>Key Features</h2>
+                <p>EduTrack Gauteng offers comprehensive features designed for secondary school environments</p>
+            </div>
+            
+            <div class="features-list">
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <i class="fas fa-qrcode"></i>
+                    </div>
+                    <div>
+                        <h3>QR Code Attendance</h3>
+                        <p>Primary method using personalized QR codes for efficient and accurate tracking.</p>
+                    </div>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <i class="fas fa-edit"></i>
+                    </div>
+                    <div>
+                        <h3>Manual Entry Option</h3>
+                        <p>Backup system for cases where QR codes cannot be used.</p>
+                    </div>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-bar"></i>
+                    </div>
+                    <div>
+                        <h3>Attendance Analytics</h3>
+                        <p>Track patterns and identify students with attendance challenges.</p>
+                    </div>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <i class="fas fa-file-export"></i>
+                    </div>
+                    <div>
+                        <h3>Compliant Reports</h3>
+                        <p>Generate reports in formats required by education departments.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="faq" id="faq">
+        <div class="container">
+            <div class="section-title">
+                <h2>Frequently Asked Questions</h2>
+                <p>Common questions about EduTrack Gauteng for secondary schools</p>
+            </div>
+            
+            <div class="faq-container">
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>What if students don't have smartphones?</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>No student smartphone is required. Schools can use existing tablets or teachers can use their own devices to scan student QR codes. We also provide a manual entry option for any situation where QR scanning isn't possible.</p>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>How does this help with reporting requirements?</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Our system automatically generates reports in the exact formats required by education departments, making it easier for schools to comply with reporting requirements.</p>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>Is training provided for teachers?</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Yes, we provide comprehensive training sessions for teachers and administrative staff, both in-person and through online resources, to ensure smooth implementation.</p>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>Can the system work offline?</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Yes, the system can work offline with data syncing when connectivity is available. This is particularly important for schools in areas with intermittent internet access.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta" id="signup">
+        <div class="cta-pattern"></div>
+        <div class="container">
+            <h2>Ready to transform your school's attendance system?</h2>
+            <p>Join schools that are saving time and improving accuracy with EduTrack.</p>
+            <a href="registration.html" class="btn btn-accent">Get Started Today</a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <i class="fas fa-chalkboard-teacher fa-2x"></i>
+                    <span><h3>EduTrack</h3></span>
+                    <span><p>Digital attendance solutions for secondary schools.</p></span>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="#home">Home</a></li>
+                        <li><a href="#about">About</a></li>
+                        <li><a href="#how-it-works">How It Works</a></li>
+                        <li><a href="#faq">FAQ</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>Resources</h3>
+                    <ul>
+                        <li><a href="implementation-guide.html">Implementation Guide</a></li>
+                        <li><a href="case-studies.html">Case Studies</a></li>
+                        
+                    </ul>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>Contact</h3>
+                    <ul>
+                        <li><a href="support.html">Support</a></li>
+                        <li><a href="contact.html">Contact Us</a></li>
+                        <li><a href="privacy.html">Privacy Policy</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="copyright">
+                <p>&copy; 2025 EduTrack Gauteng. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Mobile menu toggle
+        const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
+        const navLinks = document.querySelector('.nav-links');
+        
+        mobileMenuBtn.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+        });
+
+        // FAQ toggle functionality
+        document.querySelectorAll('.faq-question').forEach(question => {
+            question.addEventListener('click', () => {
+                const answer = question.nextElementSibling;
+                answer.classList.toggle('open');
+                
+                const icon = question.querySelector('i');
+                if (answer.classList.contains('open')) {
+                    icon.classList.remove('fa-chevron-down');
+                    icon.classList.add('fa-chevron-up');
+                } else {
+                    icon.classList.remove('fa-chevron-up');
+                    icon.classList.add('fa-chevron-down');
+                }
+            });
+        });
+
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') return;
+                
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                    
+                    // Close mobile menu if open
+                    navLinks.classList.remove('active');
+                }
+            });
+        });
+
+        // Simple fade-in animation for elements
+        document.addEventListener('DOMContentLoaded', function() {
+            const fadeElements = document.querySelectorAll('.fade-in');
+            
+            function checkFade() {
+                fadeElements.forEach(element => {
+                    const elementTop = element.getBoundingClientRect().top;
+                    const elementBottom = element.getBoundingClientRect().bottom;
+                    
+                    if (elementTop < window.innerHeight - 100 && elementBottom > 0) {
+                        element.style.opacity = '1';
+                        element.style.transform = 'translateY(0)';
+                    }
+                });
+            }
+            
+            // Set initial state
+            fadeElements.forEach(element => {
+                element.style.opacity = '0';
+                element.style.transform = 'translateY(20px)';
+                element.style.transition = 'opacity 0.8s ease, transform 0.8s ease';
+            });
+            
+            // Check on load and scroll
+            checkFade();
+            window.addEventListener('scroll', checkFade);
+        });
+    </script>
+</body>
+</html>
